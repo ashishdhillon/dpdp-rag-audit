@@ -1,4 +1,9 @@
 import unittest
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
 from dpdp_rag_audit.verhoeff import validate_verhoeff, verhoeff_check_digit
 from dpdp_rag_audit.rules.identifiers import scan_identifiers
 from dpdp_rag_audit.rules.governance import scan_metadata_compliance

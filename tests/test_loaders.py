@@ -1,8 +1,12 @@
 import json
 import sqlite3
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
 from dpdp_rag_audit.loaders import scan_sqlite_vector_store
 from dpdp_rag_audit.scanner import DPDPScanner
 from dpdp_rag_audit.cli import main
