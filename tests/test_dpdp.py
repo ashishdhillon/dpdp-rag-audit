@@ -44,6 +44,25 @@ class TestDPDPAudit(unittest.TestCase):
         self.assertIn("[REDACTED:UPI]", cleaned)
         self.assertEqual(count, 4)
 
+    def test_voter_and_dl_detection(self):
+        text = "Voter ID: ABC1234567, Driving License: DL-0420110149646."
+        violations = scan_identifiers(text)
+        types = [v.identifier_type for v in violations]
+        self.assertIn("Voter ID (EPIC)", types)
+        self.assertIn("Driving License", types)
+
+        cleaned, count = redact_identifiers(text)
+        self.assertIn("[REDACTED:VOTER_ID]", cleaned)
+        self.assertIn("[REDACTED:DRIVING_LICENSE]", cleaned)
+        self.assertEqual(count, 2)
+
+    def test_invalid_dl_state_code(self):
+        # ZZ is not a valid Indian state code
+        text = "Fake license: ZZ-0420110149646"
+        violations = scan_identifiers(text)
+        types = [v.identifier_type for v in violations]
+        self.assertNotIn("Driving License", types)
+
     def test_scanner_corpus(self):
         scanner = DPDPScanner()
         items = [

@@ -4,10 +4,13 @@ import re
 from .verhoeff import validate_verhoeff
 from .rules.identifiers import (
     AADHAAR_CANDIDATE_RE,
+    DRIVING_LICENSE_RE,
     GSTIN_RE,
     MOBILE_RE,
     PAN_RE,
     UPI_RE,
+    VALID_STATE_CODES,
+    VOTER_ID_RE,
 )
 
 
@@ -62,5 +65,24 @@ def redact_identifiers(text: str) -> tuple[str, int]:
         return "[REDACTED:UPI]"
 
     cleaned = UPI_RE.sub(replace_upi, cleaned)
+
+    # Redact Voter ID
+    def replace_voter(match: re.Match) -> str:
+        nonlocal count
+        count += 1
+        return "[REDACTED:VOTER_ID]"
+
+    cleaned = VOTER_ID_RE.sub(replace_voter, cleaned)
+
+    # Redact Driving License
+    def replace_dl(match: re.Match) -> str:
+        nonlocal count
+        dl_str = match.group(1)
+        if dl_str[:2].upper() in VALID_STATE_CODES:
+            count += 1
+            return "[REDACTED:DRIVING_LICENSE]"
+        return dl_str
+
+    cleaned = DRIVING_LICENSE_RE.sub(replace_dl, cleaned)
 
     return cleaned, count
