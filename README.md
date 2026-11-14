@@ -16,10 +16,11 @@ Under India's DPDP Act 2023 (Section 4 & 6) and GDPR (Article 5 & 17), personal 
 Embedding un-sanitized documents containing Indian identifiers into vector databases exposes organizations to substantial non-compliance liability and unauthorized data aggregation.
 
 `dpdp-rag-audit` provides:
-1. **Mathematical Checksum Validation:** Validates 12-digit Aadhaar numbers using the Verhoeff algorithm to filter out 90% of random 12-digit false positives.
-2. **Indian Identifier Scanning:** Detects PAN, GSTIN, Indian mobile numbers, UPI handles, and Indian passports.
-3. **Metadata Governance Linting:** Verifies consent verification and purpose declarations attached to vector chunks.
-4. **Automated Redactor:** Masks personal data before document ingestion into vector databases.
+1. **Mathematical Checksum Validation:** Validates 12-digit Aadhaar numbers using the Verhoeff algorithm to eliminate ~90% of numeric false positives.
+2. **Indian Identifier Scanning:** Detects Aadhaar, PAN (with spaced/hyphenated OCR handling), GSTIN, Indian mobile numbers, UPI VPAs, Voter IDs (EPIC), Indian Driving Licenses (MoRTH state-code validated), and Passports.
+3. **Native Vector Store Scanner:** Directly audits SQLite vector stores (e.g. ChromaDB's `chroma.sqlite3`) without requiring external DB servers.
+4. **Metadata Governance Linting:** Verifies consent verification and purpose declarations attached to vector chunks.
+5. **Automated Redactor:** Masks personal data before document ingestion into vector databases.
 
 ---
 
@@ -31,7 +32,7 @@ cd dpdp-rag-audit
 pip install -e .
 ```
 
-Scan documents or chunks:
+Scan documents, vector stores, or raw chunks:
 
 ```bash
 # Run on built-in demo corpus
@@ -40,8 +41,8 @@ dpdp-rag-audit scan --demo
 # Scan a directory of RAG documents (.txt, .md, .json)
 dpdp-rag-audit scan docs/
 
-# Output structured JSON report
-dpdp-rag-audit scan docs/ --format json
+# Audit ChromaDB SQLite vector store directly
+dpdp-rag-audit scan-db /path/to/chroma.sqlite3
 
 # Redact identifiers in a file before indexing
 dpdp-rag-audit redact raw_kb.md -o clean_kb.md

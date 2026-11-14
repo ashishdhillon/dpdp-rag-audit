@@ -8,7 +8,7 @@ from .redactor import redact_identifiers
 from .verhoeff import validate_verhoeff
 from .loaders import scan_sqlite_vector_store
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "PrivacyViolation",

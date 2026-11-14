@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dpdp-rag-audit"
-version = "0.1.0"
+version = "0.2.0"
 description = "Automated compliance linter and privacy scanner for RAG knowledge bases under India DPDP Act 2023 and GDPR"
 readme = "README.md"
 requires-python = ">=3.9"
