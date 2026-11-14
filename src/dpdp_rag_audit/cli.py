@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from .loaders import scan_sqlite_vector_store
 from .redactor import redact_identifiers
 from .scanner import DPDPScanner, format_markdown, format_table
 
@@ -43,6 +44,14 @@ def build_parser() -> argparse.ArgumentParser:
     redact_parser.add_argument("target", help="File to redact")
     redact_parser.add_argument("-o", "--output", help="Output path (default: stdout)")
     redact_parser.add_argument("--in-place", action="store_true", help="Modify file in-place")
+
+    # scan-db
+    db_parser = subparsers.add_parser("scan-db", help="Scan SQLite vector store (e.g. ChromaDB) directly for privacy violations")
+    db_parser.add_argument("db_path", help="Path to SQLite database file")
+    db_parser.add_argument("--table", help="Table name to inspect (auto-detected if omitted)")
+    db_parser.add_argument("--text-col", default="document", help="Column holding document chunk text (default: document)")
+    db_parser.add_argument("--meta-col", default="metadata", help="Column holding JSON metadata string (default: metadata)")
+    db_parser.add_argument("--format", choices=["table", "markdown", "json"], default="table", help="Output format")
 
     return parser
 
@@ -101,6 +110,31 @@ def handle_redact(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_scan_db(args: argparse.Namespace) -> int:
+    try:
+        items = scan_sqlite_vector_store(
+            args.db_path,
+            table_name=args.table,
+            text_column=args.text_col,
+            metadata_column=args.meta_col,
+        )
+    except Exception as e:
+        print(f"Error reading vector database: {e}", file=sys.stderr)
+        return 2
+
+    scanner = DPDPScanner()
+    report = scanner.scan_corpus(items)
+
+    if args.format == "json":
+        print(json.dumps(report.to_dict(), indent=2))
+    elif args.format == "markdown":
+        print(format_markdown(report))
+    else:
+        print(format_table(report))
+
+    return 1 if report.status == "NON_COMPLIANT" else 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -109,6 +143,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return handle_scan(args)
     elif args.command == "redact":
         return handle_redact(args)
+    elif args.command == "scan-db":
+        return handle_scan_db(args)
     return 0
 
 
