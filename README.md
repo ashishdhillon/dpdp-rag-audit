@@ -92,6 +92,19 @@ print(clean_chunk)
 
 ---
 
+## Academic & Regulatory References
+
+This project grounds its threat model and auditing methodology in peer-reviewed literature and statutory standards:
+- **Carlini et al. (USENIX Security 2021)**: *Extracting Training Data from Large Language Models*
+- **Li et al. (IEEE 2023)**: *Privacy in Large Language Models: A Survey*
+- **Raji et al. (ACM FAccT 2020)**: *Closing the AI Accountability Gap: Defining an End-to-End Framework for Internal Algorithmic Auditing*
+- **Verhoeff (1969)**: *Error Detecting Decimal Codes (Dihedral Group D5)*
+- **Digital Personal Data Protection Act, 2023**: Gazette of India Act No. 22 of 2023
+
+For full BibTeX entries and citations, see [REFERENCES.md](REFERENCES.md).
+
+---
+
 ## License
 
 MIT © [Ashish Dhillon](https://github.com/ashishdhillon)
