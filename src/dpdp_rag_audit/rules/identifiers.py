@@ -5,15 +5,15 @@ from .base import PrivacyViolation, Severity
 from ..verhoeff import validate_verhoeff
 
 # Regex patterns for Indian Identifiers under DPDP Act
-PAN_RE = re.compile(r"\b([A-Z]{5}[0-9]{4}[A-Z])\b")
+PAN_RE = re.compile(r"\b([A-Z]{5}[-\s]?[0-9]{4}[-\s]?[A-Z])\b")
 GSTIN_RE = re.compile(r"\b([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z])\b")
 MOBILE_RE = re.compile(r"(?:\+91[\s-]?)?\b([6-9]\d{9})\b")
 UPI_RE = re.compile(r"\b([a-zA-Z0-9.\-_]{2,64}@(?!example\.com|domain\.com|test\.com)[a-zA-Z]{2,32})\b")
 PASSPORT_RE = re.compile(r"\b([A-Z][1-9][0-9]{6})\b")
 VOTER_ID_RE = re.compile(r"\b([A-Z]{3}[-/]?[0-9]{7})\b")
 DRIVING_LICENSE_RE = re.compile(r"\b([A-Z]{2}[-\s]?[0-9]{2}[-\s]?(?:19[7-9][0-9]|20[0-2][0-9])[-\s]?[0-9]{7})\b")
-# 12-digit Aadhaar candidate pattern (contiguous or 4-4-4 grouped)
-AADHAAR_CANDIDATE_RE = re.compile(r"\b([2-9][0-9]{3}[\s-]?[0-9]{4}[\s-]?[0-9]{4})\b")
+# 12-digit Aadhaar candidate pattern (contiguous, spaced, dotted, or hyphenated)
+AADHAAR_CANDIDATE_RE = re.compile(r"\b([2-9][0-9]{3}[.\s\u00a0-]?[0-9]{4}[.\s\u00a0-]?[0-9]{4})\b")
 
 VALID_STATE_CODES = {
     "AN", "AP", "AR", "AS", "BR", "CH", "CG", "DN", "DD", "DL",
@@ -31,7 +31,7 @@ def scan_identifiers(text: str) -> list[PrivacyViolation]:
     # 1. Aadhaar Number (Verhoeff checksum validated)
     for m in AADHAAR_CANDIDATE_RE.finditer(text):
         raw = m.group(1)
-        digits_only = re.sub(r"[\s-]", "", raw)
+        digits_only = re.sub(r"[.\s\u00a0-]", "", raw)
         if len(digits_only) == 12 and validate_verhoeff(digits_only):
             masked = f"{digits_only[:4]} XXXX {digits_only[8:]}"
             violations.append(
@@ -49,7 +49,8 @@ def scan_identifiers(text: str) -> list[PrivacyViolation]:
 
     # 2. Permanent Account Number (PAN)
     for m in PAN_RE.finditer(text):
-        pan = m.group(1)
+        raw_pan = m.group(1)
+        pan = re.sub(r"[-\s]", "", raw_pan)
         violations.append(
             PrivacyViolation(
                 rule_id="DPDP-ID-02",

@@ -26,7 +26,7 @@ def redact_identifiers(text: str) -> tuple[str, int]:
     def replace_aadhaar(match: re.Match) -> str:
         nonlocal count
         raw = match.group(1)
-        digits = re.sub(r"[\s-]", "", raw)
+        digits = re.sub(r"[\s.\u00a0-]", "", raw)
         if len(digits) == 12 and validate_verhoeff(digits):
             count += 1
             return "[REDACTED:AADHAAR]"

@@ -63,6 +63,19 @@ class TestDPDPAudit(unittest.TestCase):
         types = [v.identifier_type for v in violations]
         self.assertNotIn("Driving License", types)
 
+    def test_ocr_and_spaced_formatting(self):
+        # Spaced PAN and dotted Aadhaar
+        valid_aadhaar_dotted = "2345.6789.0124"
+        text = f"PAN: ABCDE 1234 F, Aadhaar: {valid_aadhaar_dotted}, Alt PAN: FGHIJ-5678-K"
+        violations = scan_identifiers(text)
+        self.assertEqual(len(violations), 3)
+
+        cleaned, count = redact_identifiers(text)
+        self.assertNotIn("ABCDE 1234 F", cleaned)
+        self.assertNotIn(valid_aadhaar_dotted, cleaned)
+        self.assertNotIn("FGHIJ-5678-K", cleaned)
+        self.assertEqual(count, 3)
+
     def test_scanner_corpus(self):
         scanner = DPDPScanner()
         items = [
